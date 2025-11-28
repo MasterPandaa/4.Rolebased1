@@ -1,5 +1,6 @@
-import sys
 import random
+import sys
+
 import pygame
 
 # -----------------------------
@@ -29,154 +30,58 @@ LIGHT_GRAY = (120, 120, 120)
 
 # Tetromino colors (I, O, T, S, Z, J, L)
 PIECE_COLORS = {
-    'I': (0, 240, 240),
-    'O': (240, 240, 0),
-    'T': (160, 0, 240),
-    'S': (0, 240, 0),
-    'Z': (240, 0, 0),
-    'J': (0, 0, 240),
-    'L': (240, 160, 0),
+    "I": (0, 240, 240),
+    "O": (240, 240, 0),
+    "T": (160, 0, 240),
+    "S": (0, 240, 0),
+    "Z": (240, 0, 0),
+    "J": (0, 0, 240),
+    "L": (240, 160, 0),
 }
 
 # Tetromino rotation states (SRS-like orientation, simple kicks later)
 SHAPES = {
-    'I': [
-        [[0, 0, 0, 0],
-         [1, 1, 1, 1],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 0, 1, 0],
-         [0, 0, 1, 0],
-         [0, 0, 1, 0],
-         [0, 0, 1, 0]],
-
-        [[0, 0, 0, 0],
-         [0, 0, 0, 0],
-         [1, 1, 1, 1],
-         [0, 0, 0, 0]],
-
-        [[0, 1, 0, 0],
-         [0, 1, 0, 0],
-         [0, 1, 0, 0],
-         [0, 1, 0, 0]],
+    "I": [
+        [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
+        [[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]],
+        [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]],
+        [[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0]],
     ],
-    'O': [
-        [[0, 1, 1, 0],
-         [0, 1, 1, 0],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]]
-    ] * 4,
-    'T': [
-        [[0, 1, 0, 0],
-         [1, 1, 1, 0],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 1, 0, 0],
-         [0, 1, 1, 0],
-         [0, 1, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 0, 0, 0],
-         [1, 1, 1, 0],
-         [0, 1, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 1, 0, 0],
-         [1, 1, 0, 0],
-         [0, 1, 0, 0],
-         [0, 0, 0, 0]],
+    "O": [[[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]]] * 4,
+    "T": [
+        [[0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+        [[0, 1, 0, 0], [0, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
+        [[0, 0, 0, 0], [1, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
+        [[0, 1, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
     ],
-    'S': [
-        [[0, 1, 1, 0],
-         [1, 1, 0, 0],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 1, 0, 0],
-         [0, 1, 1, 0],
-         [0, 0, 1, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 0, 0, 0],
-         [0, 1, 1, 0],
-         [1, 1, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[1, 0, 0, 0],
-         [1, 1, 0, 0],
-         [0, 1, 0, 0],
-         [0, 0, 0, 0]],
+    "S": [
+        [[0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+        [[0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0], [0, 0, 0, 0]],
+        [[0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0]],
+        [[1, 0, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
     ],
-    'Z': [
-        [[1, 1, 0, 0],
-         [0, 1, 1, 0],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 0, 1, 0],
-         [0, 1, 1, 0],
-         [0, 1, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 0, 0, 0],
-         [1, 1, 0, 0],
-         [0, 1, 1, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 1, 0, 0],
-         [1, 1, 0, 0],
-         [1, 0, 0, 0],
-         [0, 0, 0, 0]],
+    "Z": [
+        [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+        [[0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
+        [[0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]],
+        [[0, 1, 0, 0], [1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
     ],
-    'J': [
-        [[1, 0, 0, 0],
-         [1, 1, 1, 0],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 1, 1, 0],
-         [0, 1, 0, 0],
-         [0, 1, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 0, 0, 0],
-         [1, 1, 1, 0],
-         [0, 0, 1, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 1, 0, 0],
-         [0, 1, 0, 0],
-         [1, 1, 0, 0],
-         [0, 0, 0, 0]],
+    "J": [
+        [[1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+        [[0, 1, 1, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
+        [[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 1, 0], [0, 0, 0, 0]],
+        [[0, 1, 0, 0], [0, 1, 0, 0], [1, 1, 0, 0], [0, 0, 0, 0]],
     ],
-    'L': [
-        [[0, 0, 1, 0],
-         [1, 1, 1, 0],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 1, 0, 0],
-         [0, 1, 0, 0],
-         [0, 1, 1, 0],
-         [0, 0, 0, 0]],
-
-        [[0, 0, 0, 0],
-         [1, 1, 1, 0],
-         [1, 0, 0, 0],
-         [0, 0, 0, 0]],
-
-        [[1, 1, 0, 0],
-         [0, 1, 0, 0],
-         [0, 1, 0, 0],
-         [0, 0, 0, 0]],
+    "L": [
+        [[0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+        [[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]],
+        [[0, 0, 0, 0], [1, 1, 1, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
+        [[1, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
     ],
 }
 
-WALL_KICK_OFFSETS = [
-    (0, 0), (-1, 0), (1, 0), (0, -1), (-2, 0), (2, 0)
-]
+WALL_KICK_OFFSETS = [(0, 0), (-1, 0), (1, 0), (0, -1), (-2, 0), (2, 0)]
+
 
 # -----------------------------
 # Model Classes
@@ -232,7 +137,9 @@ class Board:
         self.current = self.next_queue.pop(0)
         # Adjust spawn so piece is within width
         # If collision at spawn -> game over
-        if not self.is_valid_position(self.current, self.current.x, self.current.y, self.current.rot):
+        if not self.is_valid_position(
+            self.current, self.current.x, self.current.y, self.current.rot
+        ):
             self.game_over = True
 
     def is_valid_position(self, piece: Piece, x: int, y: int, rot: int) -> bool:
@@ -273,7 +180,9 @@ class Board:
         # Level up each LEVEL_UP_LINES lines
         self.level = max(1, self.lines // LEVEL_UP_LINES + 1)
         # Speed up with level
-        self.fall_speed = max(MIN_FALL_SPEED, START_FALL_SPEED * (0.85 ** (self.level - 1)))
+        self.fall_speed = max(
+            MIN_FALL_SPEED, START_FALL_SPEED * (0.85 ** (self.level - 1))
+        )
 
     def try_move(self, dx: int, dy: int) -> bool:
         if self.current is None:
@@ -325,7 +234,9 @@ class Board:
         if self.current is None:
             return 0
         ghost_y = self.current.y
-        while self.is_valid_position(self.current, self.current.x, ghost_y + 1, self.current.rot):
+        while self.is_valid_position(
+            self.current, self.current.x, ghost_y + 1, self.current.rot
+        ):
             ghost_y += 1
         return ghost_y
 
@@ -333,6 +244,7 @@ class Board:
 # -----------------------------
 # Rendering
 # -----------------------------
+
 
 def blend_color(color, factor=0.5, bg=WHITE):
     r = int(color[0] * (1 - factor) + bg[0] * factor)
@@ -342,7 +254,9 @@ def blend_color(color, factor=0.5, bg=WHITE):
 
 
 def draw_block(surface, x, y, color, alpha=255, outline=True):
-    rect = pygame.Rect(BORDER + x * BLOCK_SIZE, BORDER + y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+    rect = pygame.Rect(
+        BORDER + x * BLOCK_SIZE, BORDER + y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE
+    )
     if alpha < 255:
         # draw with a temporary surface for alpha
         temp = pygame.Surface((BLOCK_SIZE, BLOCK_SIZE), pygame.SRCALPHA)
@@ -383,7 +297,9 @@ def draw_board(surface, board: Board):
     # Grid lines (optional subtle)
     for x in range(GRID_WIDTH + 1):
         px = BORDER + x * BLOCK_SIZE
-        pygame.draw.line(surface, (30, 30, 30), (px, BORDER), (px, BORDER + PLAY_HEIGHT))
+        pygame.draw.line(
+            surface, (30, 30, 30), (px, BORDER), (px, BORDER + PLAY_HEIGHT)
+        )
     for y in range(GRID_HEIGHT + 1):
         py = BORDER + y * BLOCK_SIZE
         pygame.draw.line(surface, (30, 30, 30), (BORDER, py), (BORDER + PLAY_WIDTH, py))
@@ -416,8 +332,12 @@ def draw_side_panel(surface, board: Board, font):
                 if p.shape_states[0][j][k]:
                     rx = nx + k * preview_size + i * 80
                     ry = ny + j * preview_size
-                    pygame.draw.rect(surface, p.color, (rx, ry, preview_size, preview_size))
-                    pygame.draw.rect(surface, LIGHT_GRAY, (rx, ry, preview_size, preview_size), 1)
+                    pygame.draw.rect(
+                        surface, p.color, (rx, ry, preview_size, preview_size)
+                    )
+                    pygame.draw.rect(
+                        surface, LIGHT_GRAY, (rx, ry, preview_size, preview_size), 1
+                    )
 
     text("Controls:", panel_rect.top + 340)
     controls = [
@@ -441,6 +361,7 @@ def draw_side_panel(surface, board: Board, font):
 # -----------------------------
 # Game Loop
 # -----------------------------
+
 
 def main():
     pygame.init()
@@ -509,7 +430,12 @@ def main():
         draw_side_panel(screen, board, (small_font, big_font))
 
         # Border around play area
-        pygame.draw.rect(screen, LIGHT_GRAY, (BORDER-1, BORDER-1, PLAY_WIDTH+2, PLAY_HEIGHT+2), 2)
+        pygame.draw.rect(
+            screen,
+            LIGHT_GRAY,
+            (BORDER - 1, BORDER - 1, PLAY_WIDTH + 2, PLAY_HEIGHT + 2),
+            2,
+        )
 
         pygame.display.flip()
 
